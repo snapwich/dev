@@ -4,13 +4,14 @@ FROM debian:bookworm-slim
 ARG UID
 ARG GID
 
-RUN addgroup --gid $GID dev && \
+RUN if ! getent group $GID >/dev/null; then addgroup --gid $GID dev; fi && \
     adduser --disabled-password --gecos '' --uid $UID --gid $GID dev
 
 RUN apt-get update && apt-get install -y \
     build-essential \
     openssh-server \
-    default-jre \
+    xdg-utils \
+		default-jre \
     default-jdk \
     sudo \
     git \
@@ -20,19 +21,21 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean
 
 # setup home config
-COPY --chown=dev:dev ./home /home/dev/
+COPY --chown=$UID:$GID ./home /home/dev/
 
-USER dev
+USER $UID
 # oh my zsh installation
 RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 # n install
 RUN curl -L https://bit.ly/n-install | bash -s -- -y
 USER root
 
-RUN chsh -s /usr/bin/zsh dev
+RUN username=$(getent passwd 504 | cut -d: -f1) && \
+		chsh -s /usr/bin/zsh $username
 
 # sshd dependencies
-RUN echo 'dev ALL=(ALL) NOPASSWD:/usr/sbin/sshd' >> /etc/sudoers
+RUN username=$(getent passwd 504 | cut -d: -f1) && \
+		echo "$username ALL=(ALL) NOPASSWD:/usr/sbin/sshd" >> /etc/sudoers
 RUN mkdir /var/run/sshd
 RUN ssh-keygen -A
 
