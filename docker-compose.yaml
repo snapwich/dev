@@ -1,0 +1,15 @@
+
+services:
+  ssh:
+    build:
+      context: .
+      args:
+        UID: ${DEV_UID}
+        GID: ${DEV_GID}
+    ports:
+      - "2222:22"
+    volumes:
+      - ~/.ssh:/home/dev/.ssh:ro
+      - ~/.gnupg:/home/dev/.gnupg:ro
+      - ~/repos:/repos
+    user: "${DEV_UID}:${DEV_GID}"
