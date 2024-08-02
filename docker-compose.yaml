@@ -11,7 +11,4 @@ services:
     volumes:
       - ~/.ssh:/home/dev/.ssh
       - ~/.gnupg:/home/dev/.gnupg
-      - repos:/home/dev/repos
     user: "${DEV_UID}:${DEV_GID}"
-volumes:
-  repos:
