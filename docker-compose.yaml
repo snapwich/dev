@@ -9,6 +9,6 @@ services:
     ports:
       - "2222:22"
     volumes:
-      - ~/.ssh:/home/dev/.ssh:ro
-      - ~/.gnupg:/home/dev/.gnupg:ro
+      - ~/.ssh:/home/dev/.ssh
+      - ~/.gnupg:/home/dev/.gnupg
     user: "${DEV_UID}:${DEV_GID}"
