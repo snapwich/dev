@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     zsh \
     vim \
+		fzf \
     && apt-get clean
 
 # setup home config
