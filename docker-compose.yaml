@@ -10,5 +10,4 @@ services:
       - "2222:22"
     volumes:
       - ~/.ssh:/home/dev/.ssh
-      - ~/.gnupg:/home/dev/.gnupg
     user: "${DEV_UID}:${DEV_GID}"

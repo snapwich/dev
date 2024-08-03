@@ -1,0 +1,60 @@
+#!/bin/bash
+
+# Variables
+CONTAINER_NAME="dev-ssh-1"
+USER_NAME="dev"
+EXPORT_DIR="/tmp/gpg-keys"
+PUBLIC_KEY_FILE="$EXPORT_DIR/public.key"
+PRIVATE_KEY_FILE="$EXPORT_DIR/private.key"
+PASSPHRASE_FILE="$EXPORT_DIR/pass.txt"
+
+# Prompt for passphrase
+echo "Enter your GPG passphrase:"
+read -s PASSPHRASE
+
+# Create export directory
+mkdir -p $EXPORT_DIR
+
+# Automatically get the GPG key ID
+GPG_KEY_ID=$(gpg --list-secret-keys --keyid-format LONG | awk '/^sec/{print $2}' | cut -d'/' -f2)
+
+# Check if a key ID was found
+if [ -z "$GPG_KEY_ID" ]; then
+  echo "No GPG key found. Please ensure you have a GPG key before running this script."
+  exit 1
+fi
+
+# Export public and private keys
+gpg --export --armor $GPG_KEY_ID > $PUBLIC_KEY_FILE
+gpg --export-secret-keys --armor $GPG_KEY_ID > $PRIVATE_KEY_FILE
+
+# Create passphrase file
+echo $PASSPHRASE > $PASSPHRASE_FILE
+chmod 600 $PASSPHRASE_FILE
+
+# Copy keys and passphrase to Docker container
+docker cp $PUBLIC_KEY_FILE $CONTAINER_NAME:/home/$USER_NAME/public.key
+docker cp $PRIVATE_KEY_FILE $CONTAINER_NAME:/home/$USER_NAME/private.key
+docker cp $PASSPHRASE_FILE $CONTAINER_NAME:/home/$USER_NAME/passphrase.txt
+
+# Import keys in the Docker container as the specific user
+docker exec -u $USER_NAME $CONTAINER_NAME bash -c "
+  export GNUPGHOME=/home/$USER_NAME/.gnupg &&
+  mkdir -p /home/$USER_NAME/.gnupg &&
+  chmod 700 /home/$USER_NAME/.gnupg &&
+  gpg --batch --passphrase-file /home/$USER_NAME/passphrase.txt --import /home/$USER_NAME/public.key &&
+  gpg --batch --passphrase-file /home/$USER_NAME/passphrase.txt --import /home/$USER_NAME/private.key &&
+  rm /home/$USER_NAME/public.key /home/$USER_NAME/private.key /home/$USER_NAME/passphrase.txt
+"
+
+# Clean up
+rm -rf $EXPORT_DIR
+
+echo "GPG keys have been successfully exported, copied to the container, and imported."
+
+# Verify imported keys in the container as the specific user
+docker exec -u $USER_NAME $CONTAINER_NAME bash -c "
+  export GNUPGHOME=/home/$USER_NAME/.gnupg &&
+  gpg --list-secret-keys --keyid-format LONG
+"
+
