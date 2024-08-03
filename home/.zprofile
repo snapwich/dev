@@ -8,3 +8,6 @@ export EDITOR="$VISUAL"
 gs() {
   git switch $(git branch | fzf | tr -d '[:space:]')
 }
+
+unsetopt PROMPT_SP
+
