@@ -13,7 +13,8 @@ RUN apt-get update && apt-get install -y \
     xdg-utils \
 		default-jre \
     default-jdk \
-    sudo \
+    libxkbcommon0 \
+		sudo \
     git \
     curl \
     zsh \
