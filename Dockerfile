@@ -38,7 +38,7 @@ RUN username=$(getent passwd 504 | cut -d: -f1) && \
 
 # sshd dependencies
 RUN username=$(getent passwd 504 | cut -d: -f1) && \
-		echo "$username ALL=(ALL) NOPASSWD:/usr/sbin/sshd" >> /etc/sudoers
+		echo "$username ALL=(ALL) NOPASSWD:/usr/sbin/sshd, /usr/bin/lsof" >> /etc/sudoers
 RUN mkdir /var/run/sshd
 RUN ssh-keygen -A
 
