@@ -15,8 +15,9 @@ RUN apt-get update && apt-get install -y \
     default-jdk \
     libxkbcommon0 \
 		sudo \
-    git \
+		git \
     curl \
+		lsof \
     zsh \
     vim \
 		fzf \
