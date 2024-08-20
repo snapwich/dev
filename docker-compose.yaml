@@ -10,7 +10,7 @@ services:
       - "2222:22"
     volumes:
       - ~/.ssh:/home/dev/.ssh
-      - jetbrains_config:/home/dev/.config/JetBrains
+      - ./home/.config/JetBrains:/home/dev/.config/JetBrains
     user: "${DEV_UID}:${DEV_GID}"
 volumes:
   jetbrains_config:
