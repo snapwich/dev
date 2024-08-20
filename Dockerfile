@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y \
 		lsof \
     zsh \
     vim \
+		jq \
 		fzf \
     && apt-get clean
 
