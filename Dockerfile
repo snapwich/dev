@@ -33,11 +33,11 @@ RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master
 RUN curl -L https://bit.ly/n-install | bash -s -- -y
 USER root
 
-RUN username=$(getent passwd 504 | cut -d: -f1) && \
+RUN username=$(getent passwd $UID | cut -d: -f1) && \
 		chsh -s /usr/bin/zsh $username
 
 # sshd dependencies
-RUN username=$(getent passwd 504 | cut -d: -f1) && \
+RUN username=$(getent passwd $UID | cut -d: -f1) && \
 		echo "$username ALL=(ALL) NOPASSWD:/usr/sbin/sshd, /usr/bin/lsof" >> /etc/sudoers
 RUN mkdir /var/run/sshd
 RUN ssh-keygen -A
