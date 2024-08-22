@@ -22,10 +22,16 @@ optionally import your gpg keys to dev container
 ./gpg-import
 ```
 
-you can shell into the dev container with
+you can shell into the dev container as dev with
 
 ```bash
 ./dssh
 ```
 
-clone your repo somewhere inside the container and then it will be accessible through JetBrains gateway or intellij remote ssh
+or if you want to install more tools you can either update the Dockerfile and recreate the container or shell into container as root and install them
+```bash
+./dssh root
+```
+
+clone your repo somewhere inside the container and then it will be accessible through JetBrains gateway or intellij remote ssh. the repo files should all be within the container, using a docker volume will not work with intellij (intellij requires file-locking which docker volumes do not support) and using a bind mount to the host machine will be extremely slow when indexing, installing node dependencies, etc.
+

@@ -1,1 +1,13 @@
-docker exec -u dev -it dev-ssh-1 bash
+#!/bin/bash
+
+# Default user
+USER="dev"
+
+# Check if the "root" argument is provided
+if [ "$1" == "root" ]; then
+	  USER="root"
+		fi
+
+# Execute the docker command with the appropriate user
+docker exec -u $USER -it dev-ssh-1 bash
+
