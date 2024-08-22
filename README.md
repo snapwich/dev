@@ -1,3 +1,5 @@
+for using intellij remote ssh on osx or windows machines inside container (since it only supports linux currently)
+
 with a docker daemon running execute
 
 ```bash
@@ -19,3 +21,11 @@ optionally import your gpg keys to dev container
 ```bash
 ./gpg-import
 ```
+
+you can shell into the dev container with
+
+```bash
+./dssh
+```
+
+clone your repo somewhere inside the container and then it will be accessible through JetBrains gateway or intellij remote ssh
