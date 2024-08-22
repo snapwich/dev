@@ -1,6 +1,6 @@
 for using intellij remote ssh on osx or windows machines inside container (since it only supports linux currently)
 
-with a docker daemon running execute
+with a docker daemon running and docker cli and docker compose plugin available execute
 
 ```bash
 ./up
@@ -33,5 +33,5 @@ or if you want to install more tools you can either update the Dockerfile and re
 ./dssh root
 ```
 
-clone your repo somewhere inside the container and then it will be accessible through JetBrains gateway or intellij remote ssh. the repo files should all be within the container, using a docker volume will not work with intellij (intellij requires file-locking which docker volumes do not support) and using a bind mount to the host machine will be extremely slow when indexing, installing node dependencies, etc.
+clone your project repo somewhere inside the container and then it will be accessible through JetBrains gateway or intellij remote ssh. your project files should all be within the container, using a docker volume will not work with intellij (intellij requires file-locking which docker volumes do not support) and using a bind mount to the host machine will be extremely slow when indexing, installing node dependencies, etc.
 
