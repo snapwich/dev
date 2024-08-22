@@ -12,5 +12,3 @@ services:
       - ~/.ssh:/home/dev/.ssh
       - ./home/.config/JetBrains:/home/dev/.config/JetBrains
     user: "${DEV_UID}:${DEV_GID}"
-volumes:
-  jetbrains_config:
