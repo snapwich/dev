@@ -8,21 +8,21 @@ RUN if ! getent group $GID >/dev/null; then addgroup --gid $GID dev; fi && \
     adduser --disabled-password --gecos '' --uid $UID --gid $GID dev
 
 RUN apt-get update && apt-get install -y \
-    build-essential \
-    openssh-server \
-    xdg-utils \
+		build-essential \
+		openssh-server \
+		xdg-utils \
 		default-jre \
-    default-jdk \
-    libxkbcommon0 \
+		default-jdk \
+		libxkbcommon0 \
 		sudo \
 		git \
-    curl \
+		curl \
 		lsof \
-    zsh \
-    vim \
+		zsh \
+		vim \
 		jq \
 		fzf \
-    && apt-get clean
+		&& apt-get clean
 
 # setup home config
 COPY --chown=$UID:$GID ./home /home/dev/
@@ -43,7 +43,7 @@ RUN username=$(getent passwd $UID | cut -d: -f1) && \
 RUN mkdir /var/run/sshd
 RUN ssh-keygen -A
 
-# update sshd_config to listen on port 2222 and only allow key-based authentication
+# update ssh_config to only allow key-based authentication
 RUN echo 'PasswordAuthentication no' >> /etc/ssh/sshd_config \
     && echo 'ChallengeResponseAuthentication no' >> /etc/ssh/sshd_config \
     && echo 'UsePAM no' >> /etc/ssh/sshd_config
