@@ -26,6 +26,7 @@ RUN apt-get update && apt-get install -y \
 		gh \
 		curl \
 		lsof \
+		rsync \
 		zsh \
 		vim \
 		jq \
