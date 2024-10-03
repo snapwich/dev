@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y \
 		libxkbcommon0 \
 		sudo \
 		git \
+		git-lfs \
 		gh \
 		curl \
 		lsof \
