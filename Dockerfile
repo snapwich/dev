@@ -33,6 +33,8 @@ RUN apt-get update && apt-get install -y \
 		vim \
 		jq \
 		fzf \
+		htop \
+		btop \
 		&& apt-get clean
 
 # setup home config
