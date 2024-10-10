@@ -10,5 +10,5 @@ services:
       - "2222:22"
     volumes:
       - ~/.ssh:/home/dev/.ssh
-      - ./home/.config/JetBrains:/home/dev/.config/JetBrains
+      - ./home/.config:/home/dev/.config
     user: "${DEV_UID}:${DEV_GID}"

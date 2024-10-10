@@ -7,6 +7,8 @@ ARG GID
 RUN if ! getent group $GID >/dev/null; then addgroup --gid $GID dev; fi && \
     adduser --disabled-password --gecos '' --uid $UID --gid $GID dev
 
+RUN apt-get update && apt-get install -y sudo
+
 # github cli repository
 RUN (type -p wget >/dev/null || (sudo apt update && sudo apt-get install wget -y)) \
 		&& sudo mkdir -p -m 755 /etc/apt/keyrings \
@@ -21,7 +23,6 @@ RUN apt-get update && apt-get install -y \
 		default-jre \
 		default-jdk \
 		libxkbcommon0 \
-		sudo \
 		git \
 		git-lfs \
 		gh \
