@@ -3,13 +3,13 @@ for using intellij remote ssh on osx or windows machines inside container (since
 with a docker daemon running and docker cli and docker compose plugin available execute
 
 ```bash
-./up
+./up --build
 ```
 
 or to run in background 
 
 ```bash
-./up -d
+./up --build -d
 ```
 
 - host machine's current user keys (and `authorized_keys`) will be mounted to dev container at /home/dev/.ssh
