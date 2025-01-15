@@ -35,6 +35,7 @@ RUN apt-get update && apt-get install -y \
 		fzf \
 		htop \
 		btop \
+		tmux \
 		&& apt-get clean
 
 # setup home config
