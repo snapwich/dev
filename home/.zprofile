@@ -5,6 +5,9 @@ export PATH="$PATH:$HOME/n/bin"
 export VISUAL=vim
 export EDITOR="$VISUAL"
 
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+
 gs() {
   git switch $(git branch | fzf | tr -d '[:space:]')
 }
