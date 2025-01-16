@@ -36,7 +36,6 @@ RUN apt-get update && apt-get install -y \
 		fzf \
 		htop \
 		btop \
-  		xsel \
 		tmux \
 		&& apt-get clean
 
