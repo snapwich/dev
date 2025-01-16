@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install -y \
 		xdg-utils \
 		default-jre \
 		default-jdk \
+  		locales \
 		libxkbcommon0 \
 		git \
 		git-lfs \
@@ -61,6 +62,9 @@ RUN ssh-keygen -A
 RUN echo 'PasswordAuthentication no' >> /etc/ssh/sshd_config \
     && echo 'ChallengeResponseAuthentication no' >> /etc/ssh/sshd_config \
     && echo 'UsePAM no' >> /etc/ssh/sshd_config
+
+# generate locales
+RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && locale.gen
 
 EXPOSE 22
 
