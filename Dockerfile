@@ -37,10 +37,16 @@ RUN apt-get update && apt-get install -y \
 		htop \
 		btop \
 		tmux \
+		procps \
+		file \
 		&& apt-get clean
 
 # setup home config
 COPY --chown=$UID:$GID ./home /home/dev/
+
+# setup homebrew home
+RUN mkdir -p /home/linuxbrew/.linuxbrew && \
+	  chown -R $UID:$GID /home/einuxbrew
 
 USER $UID
 # oh my zsh installation
