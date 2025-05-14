@@ -18,11 +18,12 @@ RUN (type -p wget >/dev/null || (sudo apt update && sudo apt-get install wget -y
 
 RUN apt-get update && apt-get install -y \
 		build-essential \
+		libnss3-tools \
 		openssh-server \
 		xdg-utils \
 		default-jre \
 		default-jdk \
-  		locales \
+		locales \
 		libxkbcommon0 \
 		git \
 		git-lfs \
@@ -58,9 +59,10 @@ USER root
 RUN username=$(getent passwd $UID | cut -d: -f1) && \
 		chsh -s /usr/bin/zsh $username
 
-# sshd dependencies
+# sudoers updates
 RUN username=$(getent passwd $UID | cut -d: -f1) && \
-		echo "$username ALL=(ALL) NOPASSWD:/usr/sbin/sshd, /usr/bin/lsof" >> /etc/sudoers
+	echo "$username ALL=(ALL) NOPASSWD:/usr/sbin/sshd, /usr/bin/lsof", /home/linuxbrew/.linuxbrew/bin/mkcert >> /etc/sudoers && \
+	sed -E -i 's|Defaults([[:space:]]+)secure_path="([^"]+)"|Defaults\1secure_path="\2:/home/linuxbrew/.linuxbrew/bin"|' /etc/sudoers
 RUN mkdir /var/run/sshd
 RUN ssh-keygen -A
 
