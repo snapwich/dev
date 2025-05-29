@@ -47,7 +47,7 @@ COPY --chown=$UID:$GID ./home /home/dev/
 
 # setup homebrew home
 RUN mkdir -p /home/linuxbrew/.linuxbrew && \
-	  chown -R $UID:$GID /home/einuxbrew
+	  chown -R $UID:$GID /home/linuxbrew
 
 USER $UID
 # oh my zsh installation
