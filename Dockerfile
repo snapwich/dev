@@ -45,17 +45,11 @@ RUN apt-get update && apt-get install -y \
 # setup home config
 COPY --chown=$UID:$GID ./home /home/dev/
 
-# setup homebrew home
-RUN mkdir -p /home/linuxbrew/.linuxbrew && \
-	  chown -R $UID:$GID /home/linuxbrew
-
 USER $UID
 # oh my zsh installation
 RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 # n install
 RUN curl -L https://bit.ly/n-install | bash -s -- -y
-# brew install
-RUN NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 USER root
 
 RUN username=$(getent passwd $UID | cut -d: -f1) && \
@@ -63,8 +57,7 @@ RUN username=$(getent passwd $UID | cut -d: -f1) && \
 
 # sudoers updates
 RUN username=$(getent passwd $UID | cut -d: -f1) && \
-	echo "$username ALL=(ALL) NOPASSWD:/usr/sbin/sshd, /usr/bin/lsof", /home/linuxbrew/.linuxbrew/bin/mkcert >> /etc/sudoers && \
-	sed -E -i 's|Defaults([[:space:]]+)secure_path="([^"]+)"|Defaults\1secure_path="\2:/home/linuxbrew/.linuxbrew/bin"|' /etc/sudoers
+	echo "$username ALL=(ALL) NOPASSWD:/usr/sbin/sshd, /usr/bin/lsof" >> /etc/sudoers
 RUN mkdir /var/run/sshd
 RUN ssh-keygen -A
 
