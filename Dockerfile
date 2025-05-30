@@ -54,6 +54,8 @@ USER $UID
 RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 # n install
 RUN curl -L https://bit.ly/n-install | bash -s -- -y
+# brew install
+RUN NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 USER root
 
 RUN username=$(getent passwd $UID | cut -d: -f1) && \
