@@ -5,8 +5,6 @@ export PATH="$PATH:$HOME/n/bin"
 export VISUAL=vim
 export EDITOR="$VISUAL"
 
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-
 gs() {
   git switch $(git branch | fzf | tr -d '[:space:]')
 }
