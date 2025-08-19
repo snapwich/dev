@@ -32,12 +32,10 @@ RUN apt-get update && apt-get install -y \
 		lsof \
 		rsync \
 		zsh \
-		vim \
 		jq \
 		fzf \
 		htop \
-		btop \
-  		ripgrep \
+  	ripgrep \
 		tmux \
 		procps \
 		file \
@@ -46,7 +44,19 @@ RUN apt-get update && apt-get install -y \
 # setup home config
 COPY --chown=$UID:$GID ./home /home/dev/
 
+# install latest neovim stable from github releases
+RUN NVIM_ARCH=$(uname -m | sed 's/aarch64/arm64/') && \
+    curl -LO "https://github.com/neovim/neovim/releases/download/stable/nvim-linux-${NVIM_ARCH}.tar.gz" && \
+    tar -xzf "nvim-linux-${NVIM_ARCH}.tar.gz" && \
+    cp -r "nvim-linux-${NVIM_ARCH}"/* /usr/local/ && \
+    rm -rf "nvim-linux-${NVIM_ARCH}" "nvim-linux-${NVIM_ARCH}.tar.gz"
+
 USER $UID
+
+# install LazyVim for neovim
+RUN git clone https://github.com/LazyVim/starter /home/dev/.config/nvim && \
+    rm -rf /home/dev/.config/nvim/.git
+
 # oh my zsh installation
 RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 # n install
