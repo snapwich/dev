@@ -37,6 +37,7 @@ RUN apt-get update && apt-get install -y \
   htop \
   ripgrep \
   fd-find \
+  bat \
   tmux \
   procps \
   file \
@@ -47,6 +48,9 @@ COPY --chown=$UID:$GID ./home /home/dev/
 
 # link fd-find to fd
 RUN ln -s "$(which fdfind)" /usr/local/bin/fd
+
+# link batcat to bat
+RUN ln -s "$(which batcat)" /usr/local/bin/bat
 
 # install latest neovim stable from github releases
 RUN NVIM_ARCH=$(uname -m | sed 's/aarch64/arm64/') && \
