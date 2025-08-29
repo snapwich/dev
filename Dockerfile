@@ -79,7 +79,6 @@ local function paste()
 end
 
 if vim.env.SSH_TTY then
-  local osc52 = require('vim.ui.clipboard.osc52')
 	vim.g.clipboard = {
 	  name = "OSC 52",
  		copy = {
