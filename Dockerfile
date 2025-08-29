@@ -69,23 +69,28 @@ RUN git clone https://github.com/LazyVim/starter /home/dev/.config/nvim && \
 RUN mkdir -p /home/dev/.config/nvim/lua/config && \
   cat << 'EOF' > /home/dev/.config/nvim/lua/config/options.lua
 vim.g.root_spec = { "cwd" }
--- Use system clipboard for all operations
 vim.opt.clipboard = "unnamedplus"
 
--- Enable OSC 52 for SSH sessions (works in tmux if tmux has set-clipboard on)
+local function paste()
+  return {
+    vim.fn.split(vim.fn.getreg(""), "\n"),
+    vim.fn.getregtype(""),
+  }
+end
+
 if vim.env.SSH_TTY then
   local osc52 = require('vim.ui.clipboard.osc52')
-  vim.g.clipboard = {
-    name = 'OSC 52',
-    copy = {
-      ['+'] = osc52.copy('+'),
-      ['*'] = osc52.copy('*'),
-    },
-    paste = {
-      ['+'] = osc52.paste('+'),
-      ['*'] = osc52.paste('*'),
-    },
-  }
+	vim.g.clipboard = {
+	  name = "OSC 52",
+ 		copy = {
+ 	  	["+"] = require("vim.ui.clipboard.osc52").copy("+"),
+    	["*"] = require("vim.ui.clipboard.osc52").copy("*"),
+  	},
+  	paste = {
+    	["+"] = paste,
+    	["*"] = paste,
+  	},
+	}
 end
 EOF
 
