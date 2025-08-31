@@ -9,5 +9,5 @@ services:
     ports:
       - "2222:22"
     volumes:
-      - ~/.ssh:/home/dev/.ssh
+      - ~/.ssh:/home/dev/.ssh:ro
     user: "${DEV_UID}:${DEV_GID}"

@@ -7,12 +7,14 @@ ARG GID
 RUN if ! getent group $GID >/dev/null; then addgroup --gid $GID dev; fi && \
   adduser --disabled-password --gecos '' --uid $UID --gid $GID dev
 
-RUN apt-get update && apt-get install -y sudo
+# install dependencies
+RUN apt-get update && apt-get install -y \
+  sudo \
+  curl
 
 # github cli repository
-RUN (type -p wget >/dev/null || (apt update && apt-get install wget -y)) \
-  && mkdir -p -m 755 /etc/apt/keyrings \
-  && wget -qO- https://cli.github.com/packages/githubcli-archive-keyring.gpg | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
+RUN mkdir -p -m 755 /etc/apt/keyrings \
+  && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
   && chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
   && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null
 
@@ -28,7 +30,6 @@ RUN apt-get update && apt-get install -y \
   git \
   git-lfs \
   gh \
-  curl \
   lsof \
   rsync \
   zsh \
@@ -41,10 +42,8 @@ RUN apt-get update && apt-get install -y \
   tmux \
   procps \
   file \
+  stow \
   && apt-get clean
-
-# setup home config
-COPY --chown=$UID:$GID ./home /home/dev/
 
 # link fd-find to fd
 RUN ln -s "$(which fdfind)" /usr/local/bin/fd
@@ -65,40 +64,17 @@ USER $UID
 RUN git clone https://github.com/LazyVim/starter /home/dev/.config/nvim && \
   rm -rf /home/dev/.config/nvim/.git
 
-# configure neovim options
-RUN <<'SH'
-mkdir -p /home/dev/.config/nvim/lua/config
-cat > /home/dev/.config/nvim/lua/config/options.lua <<'EOF'
-vim.g.root_spec = { "cwd" }
-vim.opt.clipboard = "unnamedplus"
-
-local function paste()
-  return {
-    vim.fn.split(vim.fn.getreg(""), "\n"),
-    vim.fn.getregtype(""),
-  }
-end
-
-if vim.env.SSH_TTY then
-  vim.g.clipboard = {
-    name = "OSC 52",
-    copy = {
-      ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
-      ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
-    },
-    paste = {
-      ["+"] = paste,
-      ["*"] = paste,
-    },
-  }
-end
-EOF
-SH
-
 # oh my zsh installation
 RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 # n install
 RUN curl -L https://bit.ly/n-install | bash -s -- -y
+
+# install dotfiles
+RUN mkdir -p "$HOME/.dotfiles" && \
+  curl -fsSL https://github.com/snapwich/dotfiles/archive/refs/heads/master.tar.gz \
+  | tar -xz --strip-components=1 -C "$HOME/.dotfiles" && \
+  stow -t "$HOME" -d "$HOME/.dotfiles" --adopt n nvim ssh tmux vim zsh
+
 USER root
 
 RUN username=$(getent passwd $UID | cut -d: -f1) && \
