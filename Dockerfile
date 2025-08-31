@@ -66,8 +66,9 @@ RUN git clone https://github.com/LazyVim/starter /home/dev/.config/nvim && \
   rm -rf /home/dev/.config/nvim/.git
 
 # configure neovim options
-RUN mkdir -p /home/dev/.config/nvim/lua/config && \
-  cat << 'EOF' > /home/dev/.config/nvim/lua/config/options.lua
+RUN <<'SH'
+mkdir -p /home/dev/.config/nvim/lua/config
+cat > /home/dev/.config/nvim/lua/config/options.lua <<'EOF'
 vim.g.root_spec = { "cwd" }
 vim.opt.clipboard = "unnamedplus"
 
@@ -79,19 +80,20 @@ local function paste()
 end
 
 if vim.env.SSH_TTY then
-	vim.g.clipboard = {
-	  name = "OSC 52",
- 		copy = {
- 	  	["+"] = require("vim.ui.clipboard.osc52").copy("+"),
-    	["*"] = require("vim.ui.clipboard.osc52").copy("*"),
-  	},
-  	paste = {
-    	["+"] = paste,
-    	["*"] = paste,
-  	},
-	}
+  vim.g.clipboard = {
+    name = "OSC 52",
+    copy = {
+      ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
+      ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
+    },
+    paste = {
+      ["+"] = paste,
+      ["*"] = paste,
+    },
+  }
 end
 EOF
+SH
 
 # oh my zsh installation
 RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
