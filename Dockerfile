@@ -71,9 +71,11 @@ RUN curl -L https://bit.ly/n-install | bash -s -- -y
 
 # install dotfiles
 RUN mkdir -p "$HOME/.dotfiles" && \
-  curl -fsSL https://github.com/snapwich/dotfiles/archive/refs/heads/master.tar.gz \
-  | tar -xz --strip-components=1 -C "$HOME/.dotfiles" && \
-  stow -t "$HOME" -d "$HOME/.dotfiles" --adopt n nvim ssh tmux vim zsh
+  curl -fsSL https://github.com/snapwich/dotfiles/archive/refs/heads/master.tar.gz -o /tmp/dotfiles.tgz && \
+  tar -xzf /tmp/dotfiles.tgz --strip-components=1 -C "$HOME/.dotfiles" && \
+  stow -t "$HOME" -d "$HOME/.dotfiles" --adopt n nvim ssh tmux vim zsh && \
+  tar -xzf /tmp/dotfiles.tgz --strip-components=1 -C "$HOME/.dotfiles" && \
+  rm -f /tmp/dotfiles.tgz
 
 USER root
 
