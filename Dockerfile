@@ -52,11 +52,23 @@ RUN ln -s "$(which fdfind)" /usr/local/bin/fd
 RUN ln -s "$(which batcat)" /usr/local/bin/bat
 
 # install latest neovim stable from github releases
-RUN NVIM_ARCH=$(uname -m | sed 's/aarch64/arm64/') && \
-  curl -LO "https://github.com/neovim/neovim/releases/download/stable/nvim-linux-${NVIM_ARCH}.tar.gz" && \
-  tar -xzf "nvim-linux-${NVIM_ARCH}.tar.gz" && \
-  cp -r "nvim-linux-${NVIM_ARCH}"/* /usr/local/ && \
-  rm -rf "nvim-linux-${NVIM_ARCH}" "nvim-linux-${NVIM_ARCH}.tar.gz"
+RUN ARCH=$(uname -m | sed 's/aarch64/arm64/') && \
+  curl -LO "https://github.com/neovim/neovim/releases/download/stable/nvim-linux-${ARCH}.tar.gz" && \
+  tar -xzf "nvim-linux-${ARCH}.tar.gz" && \
+  cp -r "nvim-linux-${ARCH}"/* /usr/local/ && \
+  rm -rf "nvim-linux-${ARCH}" "nvim-linux-${ARCH}.tar.gz"
+
+# install LazyGit
+RUN ARCH=$(uname -m | sed 's/aarch64/arm64/')&& LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | \grep -Po '"tag_name": *"v\K[^"]*') && \
+  curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_Linux_${ARCH}.tar.gz" && \
+  tar xf /tmp/lazygit.tar.gz lazygit && \
+  install lazygit -D -t /usr/local/bin/ && \
+  rm -rf /tmp/lazygit*
+
+# install git-delta
+RUN ARCH=$(uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/') && curl -Lo /tmp/git-delta.deb https://github.com/dandavison/delta/releases/download/0.18.2/git-delta_0.18.2_${ARCH}.deb && \
+  dpkg -i /tmp/git-delta.deb && \
+  rm /tmp/git-delta.deb
 
 USER $UID
 
@@ -73,7 +85,7 @@ RUN curl -L https://bit.ly/n-install | bash -s -- -y
 RUN mkdir -p "$HOME/.dotfiles" && \
   curl -fsSL https://github.com/snapwich/dotfiles/archive/refs/heads/master.tar.gz -o /tmp/dotfiles.tgz && \
   tar -xzf /tmp/dotfiles.tgz --strip-components=1 -C "$HOME/.dotfiles" && \
-  stow -t "$HOME" -d "$HOME/.dotfiles" --adopt n nvim ssh tmux vim zsh && \
+  stow -t "$HOME" -d "$HOME/.dotfiles" --adopt n nvim ssh tmux vim zsh lazygit git && \
   tar -xzf /tmp/dotfiles.tgz --strip-components=1 -C "$HOME/.dotfiles" && \
   rm -f /tmp/dotfiles.tgz
 
