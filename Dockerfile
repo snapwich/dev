@@ -43,6 +43,7 @@ RUN apt-get update && apt-get install -y \
   procps \
   file \
   stow \
+  tree \
   && apt-get clean
 
 # link fd-find to fd
