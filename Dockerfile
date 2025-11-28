@@ -1,11 +1,7 @@
 FROM debian:bookworm-slim
 
-# this container is meant to be run using --user as the DEV_UID and DEV_GID which is the same as the host user
-ARG UID
-ARG GID
-
-RUN if ! getent group $GID >/dev/null; then addgroup --gid $GID dev; fi && \
-  adduser --disabled-password --gecos '' --uid $UID --gid $GID dev
+RUN addgroup --gid 1000 dev && \
+  adduser --disabled-password --gecos '' --uid 1000 --gid 1000 dev
 
 # install dependencies
 RUN apt-get update && apt-get install -y \
@@ -71,7 +67,7 @@ RUN ARCH=$(uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/') && curl -L
   dpkg -i /tmp/git-delta.deb && \
   rm /tmp/git-delta.deb
 
-USER $UID
+USER dev
 
 # install LazyVim for neovim
 RUN git clone https://github.com/LazyVim/starter /home/dev/.config/nvim && \
@@ -90,25 +86,29 @@ RUN mkdir -p "$HOME/.dotfiles" && \
   tar -xzf /tmp/dotfiles.tgz --strip-components=1 -C "$HOME/.dotfiles" && \
   rm -f /tmp/dotfiles.tgz
 
+# fix .ssh permissions for SSH StrictModes
+RUN chmod 700 /home/dev/.ssh
+
 USER root
 
-RUN username=$(getent passwd $UID | cut -d: -f1) && \
-  chsh -s /usr/bin/zsh $username
+RUN chsh -s /usr/bin/zsh dev
 
 # sudoers updates
-RUN username=$(getent passwd $UID | cut -d: -f1) && \
-  echo "$username ALL=(ALL) NOPASSWD:/usr/sbin/sshd, /usr/bin/lsof" >> /etc/sudoers
+RUN echo "dev ALL=(ALL) NOPASSWD:/usr/sbin/sshd, /usr/bin/lsof" >> /etc/sudoers
 RUN mkdir /var/run/sshd
 RUN ssh-keygen -A
 
 # update ssh_config to only allow key-based authentication
 RUN echo 'PasswordAuthentication no' >> /etc/ssh/sshd_config \
   && echo 'ChallengeResponseAuthentication no' >> /etc/ssh/sshd_config \
-  && echo 'UsePAM no' >> /etc/ssh/sshd_config
+  && echo 'UsePAM no' >> /etc/ssh/sshd_config \
+  && echo 'PermitRootLogin no' >> /etc/ssh/sshd_config \
+  && echo 'AllowUsers dev' >> /etc/ssh/sshd_config \
+  && echo 'SetEnv SSH_AUTH_SOCK=/ssh-agent' >> /etc/ssh/sshd_config
 
 # generate locales
 RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && locale-gen
 
 EXPOSE 22
 
-CMD ["sudo", "/usr/sbin/sshd", "-D"]
+CMD ["/usr/sbin/sshd", "-D"]

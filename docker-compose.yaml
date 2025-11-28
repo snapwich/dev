@@ -1,13 +1,9 @@
-
 services:
   ssh:
     build:
       context: .
-      args:
-        UID: ${DEV_UID}
-        GID: ${DEV_GID}
     ports:
       - "2222:22"
     volumes:
-      - ~/.ssh:/home/dev/.ssh:ro
-    user: "${DEV_UID}:${DEV_GID}"
+      # socket set here, env set in Dockerfile sshd_config
+      - $SSH_AUTH_SOCK:/ssh-agent

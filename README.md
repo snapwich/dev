@@ -1,20 +1,20 @@
-for using intellij remote ssh on osx or windows machines inside container (since it only supports linux currently)
+# Container Dev
 
-with a docker daemon running and docker cli and docker compose plugin available execute
+for quickly setting up a dev container accessible through ssh
 
 ```bash
 ./up --build
 ```
 
-or to run in background 
+or to run in background
 
 ```bash
 ./up --build -d
 ```
 
-- host machine's current user keys (and `authorized_keys`) will be mounted to dev container at /home/dev/.ssh
+- host machine's `authorized_keys` will be mounted to dev container at /home/dev/.ssh/authorized_keys
+- an ssh-agent will be started to forward default keys to the container (start an agent before calling `./up` if you want specific keys)
 - the dev container will be accessible on port 2222 as "dev" user (e.g. ssh dev@localhost -p 2222 if your user is in `authorized_keys`)
-- jetbrains ide config will be mounted to ./home/.config/JetBrains to maintain state between container lifecycles
 
 optionally import your gpg keys to dev container
 
@@ -29,9 +29,9 @@ you can shell into the dev container as dev with
 ```
 
 or if you want to install more tools you can either update the Dockerfile and recreate the container or shell into container as root and install them
+
 ```bash
 ./dssh root
 ```
 
-clone your project repo somewhere inside the container and then it will be accessible through JetBrains gateway or intellij remote ssh. your project files should all be within the container, using a docker volume will not work with intellij (intellij requires file-locking which docker volumes do not support) and using a bind mount to the host machine will be extremely slow when indexing, installing node dependencies, etc.
-
+clone your project repo somewhere inside the container and then it will be accessible through remote ssh. your project files should all remain in the container. using a docker volume with a bind mount to the host machine would be extremely slow if indexing, installing node dependencies, etc.

@@ -1,6 +1,11 @@
 #!/bin/bash
 
-export DEV_UID=$(id -u)
-export DEV_GID=$(id -g)
+set -e
+
+if [ -z "$SSH_AUTH_SOCK" ]; then
+  eval "$(ssh-agent)"
+  ssh-add
+fi
 
 docker compose up "$@"
+
