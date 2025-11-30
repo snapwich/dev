@@ -2,10 +2,8 @@
 
 set -e
 
-if [ -z "$SSH_AUTH_SOCK" ]; then
-  eval "$(ssh-agent)"
-  ssh-add
-fi
+# Default to Mac/Docker Desktop socket path if SSH_AUTH_SOCK not set
+export SSH_AUTH_SOCK="${SSH_AUTH_SOCK:-/run/host-services/ssh-auth.sock}"
 
 docker compose up "$@"
 

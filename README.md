@@ -13,7 +13,7 @@ or to run in background
 ```
 
 - `authorized_keys` comes from [my dotfiles repository](https://github.com/snapwich/dotfiles/blob/master/ssh/.ssh/authorized_keys)
-- an ssh-agent will be started to forward host default keys to the container (start an agent before calling `./up` if you want specific keys)
+- if no $SSH_SOCK_AUTH is set, will default to Docker Desktop/Colima (`colima start --ssh-agent`) default of /run/host-services/ssh-auth.sock
 - the dev container will be accessible on port 2222 as "dev" user (e.g. ssh dev@localhost -p 2222 if your user is in `authorized_keys`)
 
 optionally import your gpg keys to dev container
