@@ -70,13 +70,16 @@ RUN ARCH=$(uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/') && curl -L
 USER dev
 
 # install LazyVim for neovim
-RUN git clone https://github.com/LazyVim/starter /home/dev/.config/nvim && \
+RUN git clone git@github.com:LazyVim/starter.git /home/dev/.config/nvim && \
   rm -rf /home/dev/.config/nvim/.git
 
 # oh my zsh installation
 RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 # n install
 RUN curl -L https://bit.ly/n-install | bash -s -- -y
+
+# make an empty .ssh folder so stow doesn't symlink the whole .ssh folder
+RUN mkdir /home/dev/.ssh && touch /home/dev/.ssh/known_hosts
 
 # install dotfiles
 RUN mkdir -p "$HOME/.dotfiles" && \
