@@ -2,6 +2,8 @@ services:
   ssh:
     build:
       context: .
+      ssh:
+        - default
     ports:
       - "2222:22"
     volumes:

@@ -69,28 +69,29 @@ RUN ARCH=$(uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/') && curl -L
 
 USER dev
 
+# make an empty .ssh folder so stow doesn't symlink the whole .ssh folder
+RUN mkdir -p $HOME/.ssh && ssh-keyscan github.com >> $HOME/.ssh/known_hosts
+
 # install LazyVim for neovim
-RUN git clone git@github.com:LazyVim/starter.git /home/dev/.config/nvim && \
-  rm -rf /home/dev/.config/nvim/.git
+RUN --mount=type=ssh,uid=1000 \
+  git clone git@github.com:LazyVim/starter.git $HOME/.config/nvim && \
+  rm -rf $HOME/.config/nvim/.git
 
 # oh my zsh installation
 RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 # n install
 RUN curl -L https://bit.ly/n-install | bash -s -- -y
 
-# make an empty .ssh folder so stow doesn't symlink the whole .ssh folder
-RUN mkdir /home/dev/.ssh && touch /home/dev/.ssh/known_hosts
-
-# install dotfiles
-RUN mkdir -p "$HOME/.dotfiles" && \
-  curl -fsSL https://github.com/snapwich/dotfiles/archive/refs/heads/master.tar.gz -o /tmp/dotfiles.tgz && \
-  tar -xzf /tmp/dotfiles.tgz --strip-components=1 -C "$HOME/.dotfiles" && \
-  stow -t "$HOME" -d "$HOME/.dotfiles" --adopt n nvim ssh tmux vim zsh lazygit git && \
-  tar -xzf /tmp/dotfiles.tgz --strip-components=1 -C "$HOME/.dotfiles" && \
-  rm -f /tmp/dotfiles.tgz
+# install dotfiles (remove files that would conflict before stow)
+RUN --mount=type=ssh,uid=1000 \
+  git clone git@github.com:snapwich/dotfiles.git "$HOME/.dotfiles" && \
+  rm $HOME/.config/nvim/lua/config/autocmds.lua && \
+  rm $HOME/.config/nvim/lua/config/keymaps.lua && \
+  rm $HOME/.config/nvim/lua/config/options.lua && \
+  stow -t "$HOME" -d "$HOME/.dotfiles" n nvim ssh tmux vim zsh lazygit git
 
 # fix .ssh permissions for SSH StrictModes
-RUN chmod 700 /home/dev/.ssh
+RUN chmod 700 $HOME/.ssh
 
 USER root
 
