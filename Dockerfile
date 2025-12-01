@@ -1,7 +1,7 @@
 FROM debian:bookworm-slim
 
-RUN addgroup --gid 1000 dev && \
-  adduser --disabled-password --gecos '' --uid 1000 --gid 1000 dev
+RUN addgroup --gid 1001 dev && \
+  adduser --disabled-password --gecos '' --uid 1001 --gid 1001 dev
 
 # install dependencies
 RUN apt-get update && apt-get install -y \
@@ -73,7 +73,7 @@ USER dev
 RUN mkdir -p $HOME/.ssh && ssh-keyscan github.com >> $HOME/.ssh/known_hosts
 
 # install LazyVim for neovim
-RUN --mount=type=ssh,uid=1000 \
+RUN --mount=type=ssh,uid=1001 \
   git clone git@github.com:LazyVim/starter.git $HOME/.config/nvim && \
   rm -rf $HOME/.config/nvim/.git
 
@@ -83,7 +83,7 @@ RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master
 RUN curl -L https://bit.ly/n-install | bash -s -- -y
 
 # install dotfiles (remove files that would conflict before stow)
-RUN --mount=type=ssh,uid=1000 \
+RUN --mount=type=ssh,uid=1001 \
   git clone git@github.com:snapwich/dotfiles.git "$HOME/.dotfiles" && \
   rm $HOME/.config/nvim/lua/config/autocmds.lua && \
   rm $HOME/.config/nvim/lua/config/keymaps.lua && \
