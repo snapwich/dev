@@ -82,6 +82,10 @@ RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master
 # n install
 RUN curl -L https://bit.ly/n-install | bash -s -- -y
 
+# install gwtmux
+RUN --mount=type=ssh,uid=1001 \
+  git clone git@github.com:snapwich/gwtmux.git "$HOME/.local/share/gwtmux"
+
 # install dotfiles (remove files that would conflict before stow)
 RUN --mount=type=ssh,uid=1001 \
   git clone git@github.com:snapwich/dotfiles.git "$HOME/.dotfiles" && \
