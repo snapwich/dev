@@ -16,11 +16,8 @@ RUN mkdir -p -m 755 /etc/apt/keyrings \
 
 RUN apt-get update && apt-get install -y \
   build-essential \
-  libnss3-tools \
   openssh-server \
   xdg-utils \
-  default-jre \
-  default-jdk \
   locales \
   libxkbcommon0 \
   git \
@@ -36,8 +33,6 @@ RUN apt-get update && apt-get install -y \
   fd-find \
   bat \
   tmux \
-  procps \
-  file \
   stow \
   tree \
   && apt-get clean
