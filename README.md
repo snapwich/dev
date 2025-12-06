@@ -13,7 +13,8 @@ or to run in background
 ```
 
 - `authorized_keys` comes from [my dotfiles repository](https://github.com/snapwich/dotfiles/blob/master/ssh/.ssh/authorized_keys). if you would like to use this container for yourself fork and/or create your own dotfiles repo with your own configuration (or at least your own keys) and update the `Dockerfile` to reflect the new dotfiles repo location.
-- if no $SSH_SOCK_AUTH is set, will default to Docker Desktop/Colima (`colima start --ssh-agent`) default of /run/host-services/ssh-auth.sock
+- if no $SSH_SOCK_AUTH is set, will default to Docker Desktop/Colima (`colima start --ssh-agent`) default of /run/host-services/ssh-auth.sock, this allows agent forwarding from host -> vm -> container
+  - if you see `failed to convert agent config` error when running `./up` then $SSH_SOCK_AUTH is probably not set when it should be. no local ssh-agent and/or no ssh-auth.sock from vm provider.
 - the dev container will be accessible on port 2222 as "dev" user (e.g. ssh dev@localhost -p 2222 if your user is in `authorized_keys`)
 
 optionally configure your container for commit signing. ssh key signing is preferable to gpg signing

@@ -1,7 +1,10 @@
 FROM debian:bookworm-slim
 
-RUN addgroup --gid 1001 dev && \
-  adduser --disabled-password --gecos '' --uid 1001 --gid 1001 dev
+# pick unused uid. 65534 is nobody, 65532 is almost nobody.
+ARG UID=65532
+
+RUN addgroup --gid ${UID} dev && \
+  adduser --disabled-password --gecos '' --uid ${UID} --gid ${UID} dev
 
 # install dependencies
 RUN apt-get update && apt-get install -y \
@@ -17,6 +20,7 @@ RUN mkdir -p -m 755 /etc/apt/keyrings \
 RUN apt-get update && apt-get install -y \
   build-essential \
   openssh-server \
+  socat \
   xdg-utils \
   locales \
   libxkbcommon0 \
@@ -68,7 +72,7 @@ USER dev
 RUN mkdir -p $HOME/.ssh && ssh-keyscan github.com >> $HOME/.ssh/known_hosts
 
 # install LazyVim for neovim
-RUN --mount=type=ssh,uid=1001 \
+RUN --mount=type=ssh,uid=${UID} \
   git clone git@github.com:LazyVim/starter.git $HOME/.config/nvim && \
   rm -rf $HOME/.config/nvim/.git
 
@@ -78,11 +82,11 @@ RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master
 RUN curl -L https://bit.ly/n-install | bash -s -- -y
 
 # install gwtmux
-RUN --mount=type=ssh,uid=1001 \
+RUN --mount=type=ssh,uid=${UID} \
   git clone git@github.com:snapwich/gwtmux.git "$HOME/.local/share/gwtmux"
 
 # install dotfiles (remove files that would conflict before stow)
-RUN --mount=type=ssh,uid=1001 \
+RUN --mount=type=ssh,uid=${UID} \
   git clone git@github.com:snapwich/dotfiles.git "$HOME/.dotfiles" && \
   rm $HOME/.config/nvim/lua/config/autocmds.lua && \
   rm $HOME/.config/nvim/lua/config/keymaps.lua && \
@@ -97,21 +101,26 @@ USER root
 RUN chsh -s /usr/bin/zsh dev
 
 # sudoers updates
-RUN echo "dev ALL=(ALL) NOPASSWD:/usr/sbin/sshd, /usr/bin/lsof" >> /etc/sudoers
+RUN echo "dev ALL=(ALL) NOPASSWD:/usr/bin/lsof" >> /etc/sudoers
 RUN mkdir /var/run/sshd
 RUN ssh-keygen -A
 
-# update ssh_config to only allow key-based authentication
+# update ssh_config to only allow key-based authentication and only our ssh agent
 RUN echo 'PasswordAuthentication no' >> /etc/ssh/sshd_config \
   && echo 'ChallengeResponseAuthentication no' >> /etc/ssh/sshd_config \
   && echo 'UsePAM no' >> /etc/ssh/sshd_config \
   && echo 'PermitRootLogin no' >> /etc/ssh/sshd_config \
   && echo 'AllowUsers dev' >> /etc/ssh/sshd_config \
-  && echo 'SetEnv SSH_AUTH_SOCK=/ssh-agent' >> /etc/ssh/sshd_config
+  && echo 'AllowAgentForwarding no' >> /etc/ssh/sshd_config \
+  && echo 'SetEnv SSH_AUTH_SOCK=/tmp/ssh-agent-dev' >> /etc/ssh/sshd_config
 
 # generate locales
 RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && locale-gen
 
+# setup our entrypoint with tmp ssh-agent socket accessible by dev user
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 EXPOSE 22
 
-CMD ["/usr/sbin/sshd", "-D"]
+CMD ["/usr/local/bin/docker-entrypoint.sh"]
