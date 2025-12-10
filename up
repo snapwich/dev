@@ -1,8 +1,62 @@
 #!/bin/bash
-
 set -e
 
-# Default to Mac/Docker Desktop socket path if SSH_AUTH_SOCK not set
-export SSH_AUTH_SOCK="${SSH_AUTH_SOCK:-/run/host-services/ssh-auth.sock}"
+CONTAINER_NAME="dev-ssh-1"
+
+# Check if container already exists - if so, use its expected socket
+if docker container inspect "$CONTAINER_NAME" &>/dev/null; then
+  # Get the existing bind mount source for /ssh-agent
+  EXPECTED_SOCKET=$(docker inspect "$CONTAINER_NAME" --format '{{range .Mounts}}{{if eq .Destination "/ssh-agent"}}{{.Source}}{{end}}{{end}}')
+
+  if [ -n "$EXPECTED_SOCKET" ]; then
+    # Use the container's expected socket
+    export SSH_AUTH_SOCK="$EXPECTED_SOCKET"
+
+    # Check if the expected socket exists
+    if [ ! -S "$EXPECTED_SOCKET" ]; then
+      echo "Error: Tried to restart existing container but it expects SSH socket that does not exist at: $EXPECTED_SOCKET"
+      echo ""
+
+      if [ "$EXPECTED_SOCKET" = "/run/host-services/ssh-auth.sock" ]; then
+        # Docker Desktop / Colima case
+        echo "Enable SSH agent forwarding in your Docker VM (Docker Desktop, Colima, etc.)."
+        echo ""
+        echo "For Colima:"
+        echo "  colima start --ssh-agent"
+        echo ""
+      else
+        # Linux case - dynamic /tmp path
+        SOCKET_DIR=$(dirname "$EXPECTED_SOCKET")
+        echo "To create an ssh-agent at the expected location, run:"
+        echo ""
+        echo "  mkdir -p $SOCKET_DIR && ssh-agent -a $EXPECTED_SOCKET"
+        echo ""
+        echo "Then add keys with:"
+        echo "  SSH_AUTH_SOCK=$EXPECTED_SOCKET ssh-add"
+        echo ""
+      fi
+      exit 1
+    fi
+  fi
+else
+  # No container exists - use SSH_AUTH_SOCK or default to Docker Desktop path
+  export SSH_AUTH_SOCK="${SSH_AUTH_SOCK:-/run/host-services/ssh-auth.sock}"
+
+  if [ ! -S "$SSH_AUTH_SOCK" ]; then
+    echo "Error: SSH agent socket not found at: $SSH_AUTH_SOCK"
+    echo ""
+    if [ "$SSH_AUTH_SOCK" = "/run/host-services/ssh-auth.sock" ]; then
+      echo "Enable SSH agent forwarding in your Docker VM (Docker Desktop, Colima, etc.)."
+      echo ""
+      echo "For Colima:"
+      echo "  colima start --ssh-agent"
+    else
+      echo "Start an SSH agent or set SSH_AUTH_SOCK to an existing agent socket."
+      echo ""
+      echo "  eval \$(ssh-agent)"
+    fi
+    exit 1
+  fi
+fi
 
 docker compose up "$@"
