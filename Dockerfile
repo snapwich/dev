@@ -1,10 +1,10 @@
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 
 # pick unused uid. 65534 is nobody, 65532 is almost nobody.
 ARG UID=65532
 
-RUN addgroup --gid ${UID} dev && \
-  adduser --disabled-password --gecos '' --uid ${UID} --gid ${UID} dev
+RUN groupadd --gid ${UID} dev && \
+  useradd --uid ${UID} --gid ${UID} -m -s /bin/sh dev
 
 # install dependencies
 RUN apt-get update && apt-get install -y \
@@ -78,6 +78,7 @@ RUN --mount=type=ssh,uid=${UID} \
 
 # oh my zsh installation
 RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+
 # n install
 RUN curl -L https://bit.ly/n-install | bash -s -- -y
 
@@ -102,12 +103,12 @@ RUN chsh -s /usr/bin/zsh dev
 
 # sudoers updates
 RUN echo "dev ALL=(ALL) NOPASSWD:/usr/bin/lsof" >> /etc/sudoers
-RUN mkdir /var/run/sshd
+RUN mkdir -p /var/run/sshd
 RUN ssh-keygen -A
 
 # update ssh_config to only allow key-based authentication and only our ssh agent
 RUN echo 'PasswordAuthentication no' >> /etc/ssh/sshd_config \
-  && echo 'ChallengeResponseAuthentication no' >> /etc/ssh/sshd_config \
+  && echo 'KbdInteractiveAuthentication no' >> /etc/ssh/sshd_config \
   && echo 'UsePAM no' >> /etc/ssh/sshd_config \
   && echo 'PermitRootLogin no' >> /etc/ssh/sshd_config \
   && echo 'AllowUsers dev' >> /etc/ssh/sshd_config \
