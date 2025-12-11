@@ -24,6 +24,7 @@ RUN apt-get update && apt-get install -y \
   xdg-utils \
   locales \
   libxkbcommon0 \
+  libicu76 \
   git \
   git-lfs \
   gh \
