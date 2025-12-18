@@ -20,6 +20,7 @@ RUN mkdir -p -m 755 /etc/apt/keyrings \
 RUN apt-get update && apt-get install -y \
   build-essential \
   openssh-server \
+  libnss3-tools \
   socat \
   xdg-utils \
   locales \
