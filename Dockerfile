@@ -40,6 +40,7 @@ RUN apt-get update && apt-get install -y \
   bat \
   tmux \
   stow \
+  just \
   tree \
   && apt-get clean
 
