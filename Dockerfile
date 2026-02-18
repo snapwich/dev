@@ -17,6 +17,11 @@ RUN mkdir -p -m 755 /etc/apt/keyrings \
   && chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
   && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null
 
+# hashicorp (vault) repository
+RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /etc/apt/keyrings/hashicorp-archive-keyring.gpg \
+  && chmod go+r /etc/apt/keyrings/hashicorp-archive-keyring.gpg \
+  && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list > /dev/null
+
 RUN apt-get update && apt-get install -y \
   build-essential \
   openssh-server \
@@ -26,6 +31,8 @@ RUN apt-get update && apt-get install -y \
   locales \
   libxkbcommon0 \
   libicu76 \
+  libcap2-bin \
+  lsb-release \
   git \
   git-lfs \
   gh \
@@ -42,6 +49,7 @@ RUN apt-get update && apt-get install -y \
   stow \
   just \
   tree \
+  vault \
   && apt-get clean
 
 # link fd-find to fd
