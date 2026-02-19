@@ -50,6 +50,7 @@ RUN apt-get update && apt-get install -y \
   just \
   tree \
   vault \
+  uuid-runtime \
   && apt-get clean
 
 # link fd-find to fd
