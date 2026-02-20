@@ -6,10 +6,12 @@ ARG UID=65532
 RUN groupadd --gid ${UID} dev && \
   useradd --uid ${UID} --gid ${UID} -m -s /bin/sh dev
 
-# install dependencies
+# install dependencies necessary for managing keyrings
 RUN apt-get update && apt-get install -y \
   sudo \
-  curl
+  curl \
+  gnupg \
+  lsb-release
 
 # github cli repository
 RUN mkdir -p -m 755 /etc/apt/keyrings \
@@ -32,7 +34,6 @@ RUN apt-get update && apt-get install -y \
   libxkbcommon0 \
   libicu76 \
   libcap2-bin \
-  lsb-release \
   git \
   git-lfs \
   gh \
