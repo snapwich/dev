@@ -106,6 +106,9 @@ RUN --mount=type=ssh,uid=${UID} \
   rm $HOME/.config/nvim/lua/config/options.lua && \
   stow -t "$HOME" -d "$HOME/.dotfiles" n nvim ssh tmux vim zsh lazygit git
 
+# install claude code
+RUN curl -fsSL https://claude.ai/install.sh | bash
+
 # fix .ssh permissions for SSH StrictModes
 RUN chmod 700 $HOME/.ssh
 
