@@ -7,5 +7,5 @@ services:
     ports:
       - "2222:22"
     volumes:
-      # socket set here, env set in Dockerfile sshd_config
-      - $SSH_AUTH_SOCK:/ssh-agent
+      # DOCKER_SSH_SOCK is the path Docker sees (inside VM on macOS, host path on Linux)
+      - ${DOCKER_SSH_SOCK}:/ssh-agent
