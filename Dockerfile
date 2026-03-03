@@ -24,7 +24,8 @@ RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /etc/ap
   && chmod go+r /etc/apt/keyrings/hashicorp-archive-keyring.gpg \
   && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list > /dev/null
 
-RUN apt-get update && apt-get install -y \
+# SKIP_SETCAP=yes to prevent mlock in vault
+RUN apt-get update && SKIP_SETCAP=yes apt-get install -y \
   build-essential \
   openssh-server \
   libnss3-tools \
