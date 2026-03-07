@@ -53,6 +53,7 @@ RUN apt-get update && SKIP_SETCAP=yes apt-get install -y \
   just \
   tree \
   vault \
+  unzip \
   uuid-runtime \
   && apt-get clean
 
