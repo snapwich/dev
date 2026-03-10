@@ -38,7 +38,7 @@ RUN apt-get update && SKIP_SETCAP=yes apt-get install -y \
   git \
   git-lfs \
   gh \
-  python3-pip \
+  python3-venv \
   lsof \
   rsync \
   zsh \
