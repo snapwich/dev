@@ -98,6 +98,12 @@ RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master
 # n install
 RUN curl -L https://bit.ly/n-install | bash -s -- -y
 
+# n puts node in $HOME/n/bin, but only .zprofile adds it to PATH and that is a
+# login shell file. bake it into the image config so non-login shells,
+# `docker exec` and `kubectl exec` find node too.
+ENV N_PREFIX="/home/dev/n"
+ENV PATH="/home/dev/n/bin:${PATH}"
+
 # install gwtmux
 RUN --mount=type=ssh,uid=${UID} \
   git clone git@github.com:snapwich/gwtmux.git "$HOME/.local/share/gwtmux"
