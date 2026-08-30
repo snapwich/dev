@@ -1,4 +1,4 @@
-FROM debian:trixie-slim
+FROM debian:trixie-slim AS base
 
 # pick unused uid. 65534 is nobody, 65532 is almost nobody.
 ARG UID=65532
@@ -125,22 +125,56 @@ RUN echo "dev ALL=(ALL) NOPASSWD:/usr/bin/lsof" >> /etc/sudoers
 RUN mkdir -p /var/run/sshd
 RUN ssh-keygen -A
 
-# update ssh_config to only allow key-based authentication and only our ssh agent
+# update ssh_config to only allow key-based authentication.
+# port 2222: a non-root sshd cannot bind a port below 1024.
+# PidFile none: a non-root sshd cannot write /run/sshd.pid.
 RUN echo 'PasswordAuthentication no' >> /etc/ssh/sshd_config \
   && echo 'KbdInteractiveAuthentication no' >> /etc/ssh/sshd_config \
   && echo 'UsePAM no' >> /etc/ssh/sshd_config \
   && echo 'PermitRootLogin no' >> /etc/ssh/sshd_config \
   && echo 'AllowUsers dev' >> /etc/ssh/sshd_config \
-  && echo 'AllowAgentForwarding no' >> /etc/ssh/sshd_config \
-  && echo 'SetEnv SSH_AUTH_SOCK=/tmp/ssh-agent-dev' >> /etc/ssh/sshd_config
+  && echo 'Port 2222' >> /etc/ssh/sshd_config \
+  && echo 'PidFile none' >> /etc/ssh/sshd_config
+
+# sshd requires host keys owned by the user it runs as
+RUN chown dev:dev /etc/ssh/ssh_host_*_key*
 
 # generate locales
 RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && locale-gen
 
-# setup our entrypoint with tmp ssh-agent socket accessible by dev user
+EXPOSE 2222
+
+# kubernetes target: no mounted agent socket, use ssh agent forwarding instead
+# build with: docker build --ssh default --target k8s -t <registry>/dev .
+FROM base AS k8s
+
+RUN echo 'AllowAgentForwarding yes' >> /etc/ssh/sshd_config
+
+# run as dev so `kubectl exec` lands as dev (it has no --user flag).
+# sshd needs root only to setuid into other users; `AllowUsers dev` means
+# it never does.
+USER dev
+
+CMD ["/usr/sbin/sshd", "-D", "-e"]
+
+# docker target (default): host agent socket mounted at /ssh-agent, proxied
+# by socat to a dev-owned socket. agent forwarding not needed.
+FROM base AS docker
+
+RUN echo 'AllowAgentForwarding no' >> /etc/ssh/sshd_config \
+  && echo 'SetEnv SSH_AUTH_SOCK=/tmp/ssh-agent-dev' >> /etc/ssh/sshd_config
+
+# the mounted /ssh-agent socket is owned by the host user and mode 600, so
+# only root can connect to it. ssh-agent-proxy is a root-owned wrapper with
+# the socat command hardcoded; the `""` in sudoers permits it with no
+# arguments only, so this grants one fixed action, not a root shell.
+COPY ssh-agent-proxy.sh /usr/local/bin/ssh-agent-proxy
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+RUN chmod 755 /usr/local/bin/ssh-agent-proxy /usr/local/bin/docker-entrypoint.sh \
+  && echo 'dev ALL=(ALL) NOPASSWD: /usr/local/bin/ssh-agent-proxy ""' > /etc/sudoers.d/ssh-agent-proxy \
+  && chmod 440 /etc/sudoers.d/ssh-agent-proxy \
+  && visudo -c
 
-EXPOSE 22
+USER dev
 
-CMD ["/usr/local/bin/docker-entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

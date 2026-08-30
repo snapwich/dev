@@ -1,11 +1,13 @@
 services:
   ssh:
+    image: dev-ssh:docker
     build:
       context: .
+      target: docker
       ssh:
         - default
     ports:
-      - "2222:22"
+      - "2222:2222"
     volumes:
       # DOCKER_SSH_SOCK is the path Docker sees (inside VM on macOS, host path on Linux)
       - ${DOCKER_SSH_SOCK}:/ssh-agent
