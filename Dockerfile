@@ -126,6 +126,10 @@ USER root
 
 RUN chsh -s /usr/bin/zsh dev
 
+# k9s/kubectl exec start bash explicitly (no login, so chsh doesn't apply);
+# hand interactive bash over to zsh.
+RUN printf '%s\n' 'case $- in *i*) [ -z "${ZSH_VERSION-}" ] && [ -t 1 ] && command -v zsh >/dev/null && exec zsh;; esac' >> /etc/bash.bashrc
+
 # sudoers updates
 RUN echo "dev ALL=(ALL) NOPASSWD:/usr/bin/lsof" >> /etc/sudoers
 RUN mkdir -p /var/run/sshd
