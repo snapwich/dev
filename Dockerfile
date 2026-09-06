@@ -160,6 +160,13 @@ FROM base AS k8s
 
 RUN echo 'AllowAgentForwarding yes' >> /etc/ssh/sshd_config
 
+# in a j2 Sandbox the worktrees (/work) and their read-only clone source
+# (/repos) are created by the harness container's uid, so git's dubious
+# ownership guard fires for dev. system config because $HOME/.gitconfig is
+# stowed; trailing /* needs git >= 2.46 (trixie ships 2.47).
+RUN git config --system --add safe.directory '/work/*' \
+  && git config --system --add safe.directory '/repos/*'
+
 # run as dev so `kubectl exec` lands as dev (it has no --user flag).
 # sshd needs root only to setuid into other users; `AllowUsers dev` means
 # it never does.
