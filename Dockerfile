@@ -48,6 +48,7 @@ RUN apt-get update && SKIP_SETCAP=yes apt-get install -y \
   ripgrep \
   fd-find \
   bat \
+  du-dust \
   tmux \
   stow \
   just \
