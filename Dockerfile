@@ -162,6 +162,10 @@ RUN echo 'AllowAgentForwarding yes' >> /etc/ssh/sshd_config
 RUN git config --system --add safe.directory '/work/*' \
   && git config --system --add safe.directory '/repos/*'
 
+# pods are rebuilt from the image, so an oh-my-zsh update would not persist.
+# disable the update prompt system-wide (zshenv loads before the stowed zshrc).
+RUN echo "zstyle ':omz:update' mode disabled" >> /etc/zsh/zshenv
+
 # run as dev so `kubectl exec` lands as dev (it has no --user flag).
 # sshd needs root only to setuid into other users; `AllowUsers dev` means
 # it never does.
