@@ -11,7 +11,8 @@ RUN apt-get update && apt-get install -y \
   sudo \
   curl \
   gnupg \
-  lsb-release
+  lsb-release \
+  && rm -rf /var/lib/apt/lists/*
 
 # github cli repository
 RUN mkdir -p -m 755 /etc/apt/keyrings \
@@ -56,7 +57,8 @@ RUN apt-get update && SKIP_SETCAP=yes apt-get install -y \
   vault \
   unzip \
   uuid-runtime \
-  && apt-get clean
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
 # link fd-find to fd
 RUN ln -s "$(which fdfind)" /usr/local/bin/fd
@@ -96,8 +98,10 @@ RUN --mount=type=ssh,uid=${UID} \
 # oh my zsh installation
 RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
 
-# n install
-RUN curl -L https://bit.ly/n-install | bash -s -- -y
+# n install. drop n's download cache, it is a second copy of the installed
+# node. `n <version>` downloads it again when needed.
+RUN curl -L https://bit.ly/n-install | bash -s -- -y \
+  && rm -rf $HOME/n/n/versions
 
 # n puts node in $HOME/n/bin, but only .zprofile adds it to PATH and that is a
 # login shell file. bake it into the image config so non-login shells,
