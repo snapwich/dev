@@ -20,13 +20,7 @@ RUN mkdir -p -m 755 /etc/apt/keyrings \
   && chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
   && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null
 
-# hashicorp (vault) repository
-RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /etc/apt/keyrings/hashicorp-archive-keyring.gpg \
-  && chmod go+r /etc/apt/keyrings/hashicorp-archive-keyring.gpg \
-  && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list > /dev/null
-
-# SKIP_SETCAP=yes to prevent mlock in vault
-RUN apt-get update && SKIP_SETCAP=yes apt-get install -y \
+RUN apt-get update && apt-get install -y \
   build-essential \
   openssh-server \
   libnss3-tools \
@@ -54,7 +48,6 @@ RUN apt-get update && SKIP_SETCAP=yes apt-get install -y \
   stow \
   just \
   tree \
-  vault \
   unzip \
   uuid-runtime \
   && apt-get clean \
@@ -179,6 +172,18 @@ CMD ["/usr/sbin/sshd", "-D", "-e"]
 # docker target (default): host agent socket mounted at /ssh-agent, proxied
 # by socat to a dev-owned socket. agent forwarding not needed.
 FROM base AS docker
+
+# vault (client use only; the binary also contains the server, ~540MB, so the
+# k8s target does not get it). its postinst sets cap_ipc_lock (mlock) even
+# with SKIP_SETCAP=yes. the container lacks that capability, so exec of vault
+# fails. remove it.
+RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /etc/apt/keyrings/hashicorp-archive-keyring.gpg \
+  && chmod go+r /etc/apt/keyrings/hashicorp-archive-keyring.gpg \
+  && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" > /etc/apt/sources.list.d/hashicorp.list \
+  && apt-get update && apt-get install -y vault \
+  && setcap -r /usr/bin/vault \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
 RUN echo 'AllowAgentForwarding no' >> /etc/ssh/sshd_config \
   && echo 'SetEnv SSH_AUTH_SOCK=/tmp/ssh-agent-dev' >> /etc/ssh/sshd_config
