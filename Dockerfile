@@ -166,6 +166,10 @@ RUN git config --system --add safe.directory '/work/*' \
 # disable the update prompt system-wide (zshenv loads before the stowed zshrc).
 RUN echo "zstyle ':omz:update' mode disabled" >> /etc/zsh/zshenv
 
+# in a j2 Sandbox the worktrees are under /work, not $HOME, so point the
+# gwtmux picker there. zshenv, not ENV: sshd does not pass ENV to a session.
+RUN echo 'export GWTMUX_ROOT=/work' >> /etc/zsh/zshenv
+
 # run as dev so `kubectl exec` lands as dev (it has no --user flag).
 # sshd needs root only to setuid into other users; `AllowUsers dev` means
 # it never does.
